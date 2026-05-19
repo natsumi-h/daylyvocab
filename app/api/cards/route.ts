@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const maxDuration = 60;
 import Anthropic from '@anthropic-ai/sdk';
+import { jsonrepair } from 'jsonrepair';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -26,11 +27,13 @@ export async function POST(req: NextRequest) {
 
 Generate learning content for each word below. Return ONLY a raw JSON array (no markdown, no backticks).
 
+CRITICAL: Never use double-quote characters (") inside any string value. Rephrase sentences to avoid quoted speech.
+
 Each element:
 {
   "word": "<original word>",
   "japanese_meaning": "<自然な日本語訳 1〜2語>",
-  "example_en": "<1 natural example sentence>",
+  "example_en": "<1 natural example sentence, no double quotes inside>",
   "example_ja": "<その日本語訳>",
   "similar": [
     {"expr": "...", "note": "<日本語1行メモ>"},
@@ -64,7 +67,14 @@ ${wordList}`;
     const match = clean.match(/\[[\s\S]*\]/);
     if (!match) throw new Error('JSONの配列が見つかりませんでした');
 
-    return NextResponse.json(JSON.parse(match[0]));
+    let parsed;
+    try {
+      parsed = JSON.parse(match[0]);
+    } catch {
+      parsed = JSON.parse(jsonrepair(match[0]));
+    }
+
+    return NextResponse.json(parsed);
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
