@@ -5,7 +5,7 @@ import { useState, useCallback } from "react";
 interface VocabEntry {
   word: string;
   meaning: string;
-  priority: "high" | "";
+  priority: "highest" | "high" | "";
   tags: string[];
   mastered: boolean;
 }
@@ -74,7 +74,7 @@ function Card({
         padding: "26px 30px",
         marginBottom: "18px",
         boxShadow: "0 2px 14px rgba(0,0,0,0.06)",
-        borderLeft: `4px solid ${entry.priority === "high" ? "#e74c3c" : "#dde1e7"}`,
+        borderLeft: `4px solid ${entry.priority === "highest" ? "#8e44ad" : entry.priority === "high" ? "#e74c3c" : "#dde1e7"}`,
         animation: "fadeIn 0.35s ease both",
         animationDelay: `${index * 0.05}s`,
       }}
@@ -103,6 +103,22 @@ function Card({
         >
           {entry.word}
         </span>
+        {entry.priority === "highest" && (
+          <span
+            style={{
+              fontSize: "10px",
+              background: "#f5eef8",
+              color: "#8e44ad",
+              padding: "2px 8px",
+              borderRadius: "20px",
+              fontFamily: "sans-serif",
+              fontWeight: "700",
+              letterSpacing: "0.5px",
+            }}
+          >
+            HIGHEST
+          </span>
+        )}
         {entry.priority === "high" && (
           <span
             style={{
@@ -300,9 +316,10 @@ export default function App() {
       if (unmastered.length === 0)
         throw new Error("未マスターの単語が見つかりませんでした。");
 
+      const highest = shuffle(unmastered.filter((e) => e.priority === "highest"));
       const high = shuffle(unmastered.filter((e) => e.priority === "high"));
-      const normal = shuffle(unmastered.filter((e) => e.priority !== "high"));
-      const selected = [...high, ...normal].slice(0, 10);
+      const normal = shuffle(unmastered.filter((e) => e.priority !== "highest" && e.priority !== "high"));
+      const selected = [...highest, ...high, ...normal].slice(0, 10);
       setEntries(selected);
 
       setPhase("generating");

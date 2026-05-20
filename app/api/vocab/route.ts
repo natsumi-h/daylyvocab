@@ -19,8 +19,8 @@ function extractProperties(page: PageObjectResponse) {
       : '';
 
   const priorityProp = props['priority'];
-  const priority =
-    priorityProp?.type === 'select' && priorityProp.select?.name === 'high' ? 'high' : '';
+  const priorityName = priorityProp?.type === 'select' ? priorityProp.select?.name : undefined;
+  const priority = priorityName === 'highest' ? 'highest' : priorityName === 'high' ? 'high' : '';
 
   const tagsProp = props['Multi-select'];
   const tags =
